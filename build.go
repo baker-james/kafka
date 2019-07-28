@@ -5,21 +5,34 @@ import (
 	"encoding/binary"
 )
 
-func buildPayload(clientId string) []byte {
+type requestBuilder struct {
+	corrId int
+	clientId string
+}
+
+func NewRequestBuilder(clientId string) *requestBuilder {
+	return &requestBuilder{
+		clientId: clientId,
+	}
+}
+
+func (builder *requestBuilder) BuildPayload() []byte {
 	var body bytes.Buffer
-	var corrId int
+	defer func() {
+		builder.corrId++
+	}()
 
 	key, version, detail := buildApiVersions()
 
 	body.Write(key)
 	body.Write(version)
 
-	bCorrId := intToBigEndianSlice(corrId, 32)
+	bCorrId := intToBigEndianSlice(builder.corrId, 32)
 	body.Write(bCorrId)
 
-	bLenClientId := intToBigEndianSlice(len(clientId), 16)
+	bLenClientId := intToBigEndianSlice(len(builder.clientId), 16)
 	body.Write(bLenClientId)
-	body.WriteString(clientId)
+	body.WriteString(builder.clientId)
 
 	body.Write(detail)
 	lenBody := intToBigEndianSlice(body.Len(), 32)

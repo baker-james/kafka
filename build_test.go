@@ -6,6 +6,8 @@ import (
 )
 
 func Test_buildPayload(t *testing.T) {
+	builder := NewRequestBuilder("console-producer")
+
 	expected := []byte {
 		0x00, 0x00, 0x00, 0x1a,
 		0x00, 0x12, 0x00, 0x02,
@@ -16,17 +18,34 @@ func Test_buildPayload(t *testing.T) {
 		0x6f, 0x64, 0x75, 0x63,
 		0x65, 0x72,
 	}
-	actual := buildPayload("console-producer")
+	actual := builder.BuildPayload()
 	assert.Equal(t, expected, actual, "Should be equal")
 }
 
 func Test_buildPayloadWithEmptyClientId(t *testing.T) {
+	builder := NewRequestBuilder("")
+
 	expected := []byte{
 		0x00, 0x00, 0x00, 0x0a,
 		0x00, 0x12, 0x00, 0x02,
 		0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00,
 	}
-	actual := buildPayload("")
+	actual := builder.BuildPayload()
 	assert.Equal(t, expected, actual, "Should be equal")
+}
+
+func Test_CorrilationIdIncrements(t *testing.T) {
+	builder := NewRequestBuilder("")
+
+	builder.BuildPayload()
+
+	expected := []byte{
+		0x00, 0x00, 0x00, 0x0a,
+		0x00, 0x12, 0x00, 0x02,
+		0x00, 0x00, 0x00, 0x01, // Should increment after every call
+		0x00, 0x00,
+	}
+	actual := builder.BuildPayload()
+	assert.Equal(t, expected, actual, "CorrilationID should have incremented")
 }
