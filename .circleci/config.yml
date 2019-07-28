@@ -12,5 +12,13 @@ jobs:
       - checkout
 
       # specify any bash command here prefixed with `run: `
-      - run: go mod download
-      - run: go test -v ./...
+      - run:
+          name: "Download dependencies"
+          command: go mod download
+      - run:
+          name: "Run tests"
+          command: go test -v ./...
+      - run:
+          name: "Ensure 100% coverage"
+          command: |
+            go test -cover ./... | grep "coverage: 100.0% of statements"
