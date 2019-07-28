@@ -35,9 +35,6 @@ func intToBigEndianSlice(val, size int) []byte {
 		binary.BigEndian.PutUint16(slice, uint16(val))
 	case 32:
 		binary.BigEndian.PutUint32(slice, uint32(val))
-	case 64:
-		binary.BigEndian.PutUint64(slice, uint64(val))
 	}
-
 	return slice
 }
