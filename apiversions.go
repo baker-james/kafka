@@ -1,11 +1,9 @@
 package kafka
 
-func buildApiVersions() ([]byte, []byte, []byte) {
-	apiKey := 18
-	version := 2
-	detail := []byte(nil)
+func buildApiVersions() (KafkaInt16, KafkaInt16, Byter) {
+	var apiKey KafkaInt16 = 18
+	var version KafkaInt16 = 2
+	var detail KafkaNull
 
-	return intToBigEndianSlice(apiKey, 16),
-		intToBigEndianSlice(version, 16),
-		detail
+	return apiKey, version, detail
 }

@@ -2,52 +2,35 @@ package kafka
 
 import (
 	"bytes"
-	"encoding/binary"
 )
 
 type requestBuilder struct {
-	corrId int
-	clientId string
+	corrilationId KafkaInt32
+	clientId      KafkaString
 }
 
 func NewRequestBuilder(clientId string) *requestBuilder {
 	return &requestBuilder{
-		clientId: clientId,
+		clientId: KafkaString(clientId),
 	}
 }
 
 func (builder *requestBuilder) BuildPayload() []byte {
 	var body bytes.Buffer
 	defer func() {
-		builder.corrId++
+		builder.corrilationId++
 	}()
 
 	key, version, detail := buildApiVersions()
 
-	body.Write(key)
-	body.Write(version)
+	body.Write(key.Bytes())
+	body.Write(version.Bytes())
+	body.Write(builder.corrilationId.Bytes())
+	body.Write(builder.clientId.Bytes())
 
-	bCorrId := intToBigEndianSlice(builder.corrId, 32)
-	body.Write(bCorrId)
+	body.Write(detail.Bytes())
 
-	bLenClientId := intToBigEndianSlice(len(builder.clientId), 16)
-	body.Write(bLenClientId)
-	body.WriteString(builder.clientId)
+	var bodyLength = KafkaInt32(body.Len())
 
-	body.Write(detail)
-	lenBody := intToBigEndianSlice(body.Len(), 32)
-	payload := append(lenBody, body.Bytes()...)
-
-	return payload
-}
-
-func intToBigEndianSlice(val, size int) []byte {
-	slice := make([]byte, size/8)
-	switch size {
-	case 16:
-		binary.BigEndian.PutUint16(slice, uint16(val))
-	case 32:
-		binary.BigEndian.PutUint32(slice, uint32(val))
-	}
-	return slice
+	return append(bodyLength.Bytes(), body.Bytes()...)
 }
