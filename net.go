@@ -3,10 +3,7 @@ package kafka
 import (
 	"io"
 	"io/ioutil"
-	"net"
 )
-
-var conn net.Conn
 
 func Send(rw io.ReadWriter, req []byte) ([]byte, error) {
 	var err error

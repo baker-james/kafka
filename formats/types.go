@@ -1,4 +1,4 @@
-package kafka
+package formats
 
 import (
 	"encoding/binary"
@@ -14,9 +14,6 @@ type Byter interface {
 }
 
 type KafkaInt16 int16
-type KafkaInt32 int32
-type KafkaString string
-type KafkaNull struct{}
 
 func (k KafkaInt16) Bytes() []byte {
 	slice := make([]byte, int16Size)
@@ -24,17 +21,23 @@ func (k KafkaInt16) Bytes() []byte {
 	return slice
 }
 
+type KafkaInt32 int32
+
 func (k KafkaInt32) Bytes() []byte {
 	slice := make([]byte, int32Size)
 	binary.BigEndian.PutUint32(slice, uint32(k))
 	return slice
 }
 
+type KafkaString string
+
 func (k KafkaString) Bytes() []byte {
 	length := KafkaInt16(len(k))
 	b := []byte(k)
 	return append(length.Bytes(), b...)
 }
+
+type KafkaNull struct{}
 
 func (k KafkaNull) Bytes() []byte {
 	return nil

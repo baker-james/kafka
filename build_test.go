@@ -1,11 +1,12 @@
 package kafka
 
 import (
+	"github.com/baker-james/kafka/formats"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func Test_buildPayload(t *testing.T) {
+func Test_buildApiVersions(t *testing.T) {
 	builder := NewRequestBuilder("console-producer")
 
 	expected := []byte {
@@ -18,7 +19,10 @@ func Test_buildPayload(t *testing.T) {
 		0x6f, 0x64, 0x75, 0x63,
 		0x65, 0x72,
 	}
-	actual := builder.BuildPayload()
+	req, isSupported := formats.GetApiVersions(2, 2)
+	assert.True(t, isSupported, "expect to be supported")
+
+	actual := builder.BuildPayload(req)
 	assert.Equal(t, expected, actual, "Should be equal")
 }
 
@@ -31,14 +35,15 @@ func Test_buildPayloadWithEmptyClientId(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00,
 	}
-	actual := builder.BuildPayload()
+	req, isSupported := formats.GetApiVersions(2, 2)
+	assert.True(t, isSupported, "expect to be supported")
+
+	actual := builder.BuildPayload(req)
 	assert.Equal(t, expected, actual, "Should be equal")
 }
 
 func Test_CorrilationIdIncrements(t *testing.T) {
 	builder := NewRequestBuilder("")
-
-	builder.BuildPayload()
 
 	expected := []byte{
 		0x00, 0x00, 0x00, 0x0a,
@@ -46,6 +51,12 @@ func Test_CorrilationIdIncrements(t *testing.T) {
 		0x00, 0x00, 0x00, 0x01, // Should increment after every call
 		0x00, 0x00,
 	}
-	actual := builder.BuildPayload()
+
+	req, isSupported := formats.GetApiVersions(2, 2)
+	assert.True(t, isSupported, "expect to be supported")
+
+	builder.BuildPayload(req)
+
+	actual := builder.BuildPayload(req)
 	assert.Equal(t, expected, actual, "CorrilationID should have incremented")
 }
