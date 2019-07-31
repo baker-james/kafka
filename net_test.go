@@ -96,3 +96,23 @@ func TestSendWithReadErr(t *testing.T) {
 	assert.Equal(t, []byte(nil), actRes, "Should not be tampered")
 	assert.Equal(t, mock.readErr, actErr, "Should not be tampered")
 }
+
+//func TestReal(t *testing.T) {
+//
+//	conn, err := net.Dial("tcp", "localhost:9092")
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	request, supported := formats.GetApiVersions(2, 2)
+//	if !supported {
+//		t.Fatal(supported)
+//	}
+//
+//	payload := NewRequestBuilder("").BuildPayload(request)
+//
+//	actRes, actErr :=  Send(conn, payload)
+//
+//	assert.Equal(t, []byte(nil), actRes, "Should not be tampered")
+//	assert.Equal(t, error(nil), actErr)
+//}

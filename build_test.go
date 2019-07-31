@@ -42,6 +42,16 @@ func Test_buildPayloadWithEmptyClientId(t *testing.T) {
 	assert.Equal(t, expected, actual, "Should be equal")
 }
 
+//func TestBuilder_Metadata(t *testing.T) {
+//	builder := NewRequestBuilder("")
+//
+//	expected := []byte{
+//		0x00,
+//	}
+//
+//	req, isSupported := formats.GetMetadata
+//}
+
 func Test_CorrilationIdIncrements(t *testing.T) {
 	builder := NewRequestBuilder("")
 

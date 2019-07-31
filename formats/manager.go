@@ -1,14 +1,12 @@
 package formats
 
-type apikey int
-
 const Metadata KafkaInt16 = 3
 const ApiVersions KafkaInt16 = 18
 
 type Request struct {
-	key KafkaInt16
+	key     KafkaInt16
 	version KafkaInt16
-	details Byter
+	body    Byter
 }
 
 func (req Request) Key() []byte {
@@ -19,48 +17,79 @@ func (req Request) Version() []byte {
 	return req.version.Bytes()
 }
 
-func (req Request) Details() []byte {
-	return req.details.Bytes()
-}
-
-type versions []Byter
-
-var requestVersions = map[KafkaInt16]versions {
-	ApiVersions: {
-		apiVersions(),
-		apiVersions(),
-		apiVersions(),
-	},
-	Metadata: {
-		metadata(),
-	},
+func (req Request) Body() []byte {
+	return req.body.Bytes()
 }
 
 func GetApiVersions(min, max int) (Request, bool) {
-	var req = Request{
-		key: ApiVersions,
+	var arr = []Byter {
+		apiversions{},
+		apiversions{},
+		apiversions{},
 	}
 
-	supported := requestVersions[req.key]
-
-	version, isSupported := chooseVersion(supported, min, max)
-	if !isSupported {
-		return Request{}, isSupported
+	version, supported := chooseVersion(len(arr)-1, min, max)
+	if !supported {
+		return Request{}, supported
 	}
-	req.version = version
-	req.details = supported[req.version]
 
-	return req, true
+	return Request{
+		key:     ApiVersions,
+		version: version,
+		body:    arr[version],
+	}, supported
 }
 
-func chooseVersion(supported versions, min, max int) (KafkaInt16, bool) {
-	maxAvailable := len(supported)-1
+func GetMetadata(min, max int, topics []string) (Request, bool) {
+	var body metadataV1
 
+	version, supported := chooseVersion(3, min, max)
+	if !supported {
+		return Request{}, false
+	}
+
+	body.KafkaArray = make(KafkaArray, len(topics))
+	for i, topic := range topics  {
+		body.KafkaArray[i] = KafkaComposite{
+			KafkaString(topic),
+		}
+	}
+
+	return Request{
+		key:     Metadata,
+		version: version,
+		body:    body,
+	}, supported
+}
+
+func GetMatadataV4(min, max int, topics []string, createTopics bool) (Request, bool) {
+	var body metadataV4
+	version, supported := chooseVersion(3, min, max)
+	if !supported {
+		return Request{}, false
+	}
+
+	body.KafkaArray = make(KafkaArray, len(topics))
+	for i, topic := range topics  {
+		body.KafkaArray[i] = KafkaComposite{
+			KafkaString(topic),
+		}
+	}
+	body.createTopics = KafkaBoolean(createTopics)
+
+	return Request{
+		key:     Metadata,
+		version: version,
+		body:    body,
+	}, supported
+}
+
+func chooseVersion(maxSupported, min, max int) (KafkaInt16, bool) {
 	switch {
-	case min > len(supported):
-		return 0, false
-	case max > maxAvailable:
-		return KafkaInt16(maxAvailable), true
+	case min > maxSupported:
+		return -1, false
+	case max > maxSupported:
+		return KafkaInt16(maxSupported), true
 	default:
 		return KafkaInt16(max), true
 	}

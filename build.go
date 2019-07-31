@@ -21,16 +21,16 @@ func (builder *builder) BuildPayload(req formats.Request) []byte {
 		builder.corrilationId++
 	}()
 
-	var body bytes.Buffer
+	var payload bytes.Buffer
 
-	body.Write(req.Key())
-	body.Write(req.Version())
-	body.Write(builder.corrilationId.Bytes())
-	body.Write(builder.clientId.Bytes())
+	payload.Write(req.Key())
+	payload.Write(req.Version())
+	payload.Write(builder.corrilationId.Bytes())
+	payload.Write(builder.clientId.Bytes())
 
-	body.Write(req.Details())
+	payload.Write(req.Body())
 
-	var bodyLength = formats.KafkaInt32(body.Len())
+	var length = formats.KafkaInt32(payload.Len())
 
-	return append(bodyLength.Bytes(), body.Bytes()...)
+	return append(length.Bytes(), payload.Bytes()...)
 }

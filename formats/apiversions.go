@@ -1,5 +1,5 @@
 package formats
 
-func apiVersions() Byter {
-	return KafkaNull{}
+type apiversions struct {
+	KafkaNull
 }
