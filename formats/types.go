@@ -14,6 +14,18 @@ type Byter interface {
 	Bytes() []byte
 }
 
+type ByterGroup []Byter
+
+func (com ByterGroup) Bytes() []byte {
+	var buf bytes.Buffer
+
+	for i := range com {
+		buf.Write(com[i].Bytes())
+	}
+
+	return buf.Bytes()
+}
+
 type KafkaBoolean bool
 
 func (b KafkaBoolean) Bytes() []byte {
@@ -47,29 +59,16 @@ func (str KafkaString) Bytes() []byte {
 	return append(length.Bytes(), b...)
 }
 
-type KafkaComposite []Byter
-
-func (com KafkaComposite) Bytes() []byte {
-	var buf bytes.Buffer
-
-	for i := range com {
-		buf.Write(com[i].Bytes())
-	}
-
-	return buf.Bytes()
-}
-
-type KafkaArray []KafkaComposite
+type KafkaArray []ByterGroup
 
 func (arr KafkaArray) Bytes() []byte {
 	var buf bytes.Buffer
+	var length = KafkaInt32(len(arr))
 
+	buf.Write(length.Bytes())
 	for i := range arr {
 		buf.Write(arr[i].Bytes())
 	}
-
-	var length = KafkaInt32(buf.Len())
-	buf.Write(length.Bytes())
 
 	return buf.Bytes()
 }

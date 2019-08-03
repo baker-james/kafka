@@ -1,5 +1,5 @@
 package formats
 
-type apiversions struct {
+type apiversionsFormat1 struct {
 	KafkaNull
 }

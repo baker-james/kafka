@@ -1,8 +1,5 @@
 package formats
 
-const Metadata KafkaInt16 = 3
-const ApiVersions KafkaInt16 = 18
-
 type Request struct {
 	key     KafkaInt16
 	version KafkaInt16
@@ -21,76 +18,96 @@ func (req Request) Body() []byte {
 	return req.body.Bytes()
 }
 
-func GetApiVersions(min, max int) (Request, bool) {
-	var arr = []Byter {
-		apiversions{},
-		apiversions{},
-		apiversions{},
-	}
 
-	version, supported := chooseVersion(len(arr)-1, min, max)
-	if !supported {
-		return Request{}, supported
-	}
-
+func GetApiVersionsV0() Request {
 	return Request{
-		key:     ApiVersions,
-		version: version,
-		body:    arr[version],
-	}, supported
+		key:     18,
+		version: 0,
+		body:    apiversionsFormat1{},
+	}}
+
+func GetApiVersionsV1() Request {
+	return Request{
+		key:     18,
+		version: 1,
+		body:    apiversionsFormat1{},
+	}}
+
+func GetApiVersionsV2() Request {
+	return Request{
+		key:     18,
+		version: 2,
+		body:    apiversionsFormat1{},
+	}}
+
+func GetMetadataV0(topics []string) Request {
+	return Request{
+		3,
+		0,
+		createMetadataV0_V3(topics),
+	}
 }
 
-func GetMetadata(min, max int, topics []string) (Request, bool) {
-	var body metadataV1
-
-	version, supported := chooseVersion(3, min, max)
-	if !supported {
-		return Request{}, false
-	}
-
-	body.KafkaArray = make(KafkaArray, len(topics))
-	for i, topic := range topics  {
-		body.KafkaArray[i] = KafkaComposite{
-			KafkaString(topic),
-		}
-	}
-
+func GetMetadataV1(topics []string) Request {
 	return Request{
-		key:     Metadata,
-		version: version,
-		body:    body,
-	}, supported
+		3,
+		1,
+		createMetadataV0_V3(topics),
+	}
 }
 
-func GetMatadataV4(min, max int, topics []string, createTopics bool) (Request, bool) {
-	var body metadataV4
-	version, supported := chooseVersion(3, min, max)
-	if !supported {
-		return Request{}, false
-	}
-
-	body.KafkaArray = make(KafkaArray, len(topics))
-	for i, topic := range topics  {
-		body.KafkaArray[i] = KafkaComposite{
-			KafkaString(topic),
-		}
-	}
-	body.createTopics = KafkaBoolean(createTopics)
-
+func GetMetadataV2(topics []string) Request {
 	return Request{
-		key:     Metadata,
-		version: version,
-		body:    body,
-	}, supported
+		3,
+		2,
+		createMetadataV0_V3(topics),
+	}
 }
 
-func chooseVersion(maxSupported, min, max int) (KafkaInt16, bool) {
-	switch {
-	case min > maxSupported:
-		return -1, false
-	case max > maxSupported:
-		return KafkaInt16(maxSupported), true
-	default:
-		return KafkaInt16(max), true
+func GetMetadataV3(topics []string) Request {
+	return Request{
+		3,
+		3,
+		createMetadataV0_V3(topics),
+	}
+}
+
+func GetMetadataV4(topics []string, allowAutoTopicCreation bool) Request {
+	return Request{
+		key:     3,
+		version: 4,
+		body:    createMetadataV4_V7(topics, allowAutoTopicCreation),
+	}
+}
+
+func GetMetadataV5(topics []string, allowAutoTopicCreation bool) Request {
+	return Request{
+		key:     3,
+		version: 5,
+		body:    createMetadataV4_V7(topics, allowAutoTopicCreation),
+	}
+}
+
+func GetMetadataV6(topics []string, allowAutoTopicCreation bool) Request {
+	return Request{
+		key:     3,
+		version: 6,
+		body:    createMetadataV4_V7(topics, allowAutoTopicCreation),
+	}
+}
+
+func GetMetadataV7(topics []string, allowAutoTopicCreation bool) Request {
+	return Request{
+		key:     3,
+		version: 7,
+		body:    createMetadataV4_V7(topics, allowAutoTopicCreation),
+	}
+}
+
+func GetMetadataV8(topics []string, allowAutoTopicCreation, inclClusterAuth, inclTopicAuth bool) Request {
+	return Request{
+		key:     3,
+		version: 8,
+		body:    createMetadataV8(topics, allowAutoTopicCreation, inclClusterAuth, inclTopicAuth),
 	}
 }

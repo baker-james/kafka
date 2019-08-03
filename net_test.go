@@ -104,12 +104,9 @@ func TestSendWithReadErr(t *testing.T) {
 //		t.Fatal(err)
 //	}
 //
-//	request, supported := formats.GetApiVersions(2, 2)
-//	if !supported {
-//		t.Fatal(supported)
-//	}
+//	request := formats.GetMetadataV4([]string{"yello"}, false)
 //
-//	payload := NewRequestBuilder("").BuildPayload(request)
+//	payload := NewRequestBuilder("test").BuildPayload(request)
 //
 //	actRes, actErr :=  Send(conn, payload)
 //
