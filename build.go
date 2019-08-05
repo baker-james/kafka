@@ -2,35 +2,35 @@ package kafka
 
 import (
 	"bytes"
+	"github.com/baker-james/kafka/formats"
 )
 
-type requestBuilder struct {
-	corrilationId KafkaInt32
-	clientId      KafkaString
+type builder struct {
+	corrilationId formats.KafkaInt32
+	clientId      formats.KafkaString
 }
 
-func NewRequestBuilder(clientId string) *requestBuilder {
-	return &requestBuilder{
-		clientId: KafkaString(clientId),
+func NewRequestBuilder(clientId string) *builder {
+	return &builder{
+		clientId: formats.KafkaString(clientId),
 	}
 }
 
-func (builder *requestBuilder) BuildPayload() []byte {
-	var body bytes.Buffer
+func (builder *builder) BuildPayload(req formats.Request) []byte {
 	defer func() {
 		builder.corrilationId++
 	}()
 
-	key, version, detail := buildApiVersions()
+	var payload bytes.Buffer
 
-	body.Write(key.Bytes())
-	body.Write(version.Bytes())
-	body.Write(builder.corrilationId.Bytes())
-	body.Write(builder.clientId.Bytes())
+	payload.Write(req.Key())
+	payload.Write(req.Version())
+	payload.Write(builder.corrilationId.Bytes())
+	payload.Write(builder.clientId.Bytes())
 
-	body.Write(detail.Bytes())
+	payload.Write(req.Body())
 
-	var bodyLength = KafkaInt32(body.Len())
+	var length = formats.KafkaInt32(payload.Len())
 
-	return append(bodyLength.Bytes(), body.Bytes()...)
+	return append(length.Bytes(), payload.Bytes()...)
 }
